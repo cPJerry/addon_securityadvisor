@@ -62,6 +62,9 @@ sub _check_for_kernel_version {
         if ( $running_kernelversion_without_release ne $latest_kernelversion_without_release ) {
             $self->add_info_advice( 'text' => [ 'Custom kernel version cannot be checked to see if it is up to date: ' . $running_kernelversion ] );
         }
+        elsif ( `cat /var/cpanel/envtype` == "virtuozzo") { # Dont't run on openvz, as it is pointless. They cannot update their Kernel
+            $self->add_info_advice( 'text' => [ 'Kernel updates not supported on this virtualization platform: [_1]', `cat /var/cpanel/envtype` ] );
+        }
         elsif ( $current_kernelversion ne $latest_kernelversion ) {
             $self->add_bad_advice(
                 'text'       => ["Current kernel version is out of date. current: $current_kernelversion, expected: $latest_kernelversion"],
