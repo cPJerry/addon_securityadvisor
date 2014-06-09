@@ -30,7 +30,6 @@ use strict;
 use base 'Cpanel::Security::Advisor::Assessors';
 use Cpanel::SafeRun::Errors ();
 use Cpanel::OSSys           ();
-
 sub version {
     return '1.01.2';
 }
@@ -52,7 +51,7 @@ sub _check_for_kernel_version {
             unshift( @kernel_update, $kernel_update{$update} );
         }
     }
-
+    my $envtype = Cpanel::LoadFile::loadfile('/var/cpanel/envtype');
     my $latest_kernelversion  = installed_kernels();
     my $running_kernelversion = ( Cpanel::OSSys::uname() )[2];
     $running_kernelversion =~ s/\.(?:noarch|x86_64|i.86)$//;
@@ -60,8 +59,8 @@ sub _check_for_kernel_version {
     if ( ( ( ( Cpanel::OSSys::uname() )[2] ) =~ m/\.(?:noarch|x86_64|i.86).+$/ ) ) {
         $self->add_info_advice( 'text' => [ 'Custom kernel version cannot be checked to see if it is up to date: [_1]', $running_kernelversion ] );
     }
-    elsif ( `cat /var/cpanel/envtype` == "virtuozzo") { # Dont't run on openvz, as it is pointless. They cannot update their Kernel
-        $self->add_info_advice( 'text' => [ 'Kernel updates not supported on this virtualization platform: [_1]', `cat /var/cpanel/envtype` ] );
+    elsif ( $envtype =~ m/virtuozzo/i ) { # Dont't run on openvz, as it is pointless. They cannot update their Kernel
+        $self->add_info_advice( 'text' => [ 'Kernel updates not supported on this virtualization platform: [_1]', $envtype ] );
     }
     elsif ( (@kernel_update) ) {
         $self->add_bad_advice(
